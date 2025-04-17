@@ -35,7 +35,7 @@ Une fois connecté via `POST /users/login`, tu reçois un token JWT :
   "access_token": "eyJhbGciOiJIUzI1NiIs...",
   "token_type": "bearer"
 }
-
+````
 ---
 
 ## 📚 Routes principales
