@@ -6,10 +6,22 @@ from app.routes.solde import router as solde_router
 from app.database import engine, Base
 from app.models import transaction, user, solde  # important pour que SQLAlchemy voie le modèle
 
+from fastapi.middleware.cors import CORSMiddleware
+
+
 # Création de la base si elle n'existe pas encore
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # autorise React
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # Inclusion des routes
 app.include_router(test_router)

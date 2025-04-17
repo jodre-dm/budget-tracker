@@ -24,7 +24,7 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Email déjà utilisé")
 
     hashed_pw = hash_password(user.password)
-    db_user = User(email=user.email, hashed_password=hashed_pw)
+    db_user = User(email=user.email, prenom=user.prenom, hashed_password=hashed_pw)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -36,5 +36,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Identifiants invalides")
 
-    token = create_access_token(data={"sub": str(user.id)})
+    # token = create_access_token(data={"sub": str(user.id)})
+    token = create_access_token(data={"sub": str(user.id), "prenom": user.prenom})
+
     return {"access_token": token, "token_type": "bearer"}
