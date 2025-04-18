@@ -200,6 +200,15 @@ def get_resume_mensuel(
         "par_type": {k: round(v, 2) for k, v in par_type.items()}
     }
 
+@router.patch("/reset-statut")
+def reset_statuts(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    db.query(Transaction).filter(Transaction.user_id == current_user.id).update(
+        {Transaction.statut: "en attente"}
+    )
+    db.commit()
+    return {"message": "Tous les statuts ont été réinitialisés"}
+
+
 # 🔍 Détail transaction
 @router.get("/{transaction_id}", response_model=TransactionRead)
 def get_transaction(transaction_id: int, db: Session = Depends(get_db)):

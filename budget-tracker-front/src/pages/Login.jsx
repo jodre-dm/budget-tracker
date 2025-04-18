@@ -17,7 +17,8 @@ export default function Login() {
     formData.append("password", password);
 
     try {
-      const response = await fetch("http://localhost:8000/users/login", {
+      // const response = await fetch("http://localhost:8000/users/login", {
+      const response = await fetch("http://192.168.1.73:8000/users/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded"
@@ -41,7 +42,11 @@ export default function Login() {
     } catch (err) {
       setErreur("Erreur réseau");
     }
+ 
+    
   };
+
+
 
   return (
     <div style={{ padding: "2rem", maxWidth: 400, margin: "auto" }}>
@@ -74,3 +79,5 @@ export default function Login() {
     </div>
   );
 }
+
+

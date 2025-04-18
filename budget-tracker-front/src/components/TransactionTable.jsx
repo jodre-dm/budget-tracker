@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
+import EditTransactionModal from "./EditTransactionModal";
 
 export default function TransactionTable({ type, refresh, onUpdate }) {
   const [transactions, setTransactions] = useState([]);
   const [message, setMessage] = useState("");
+  const [edition, setEdition] = useState(null);
+  const [tri, setTri] = useState("date");
+  const [ordre, setOrdre] = useState("desc");
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -24,7 +28,7 @@ export default function TransactionTable({ type, refresh, onUpdate }) {
     };
 
     fetchTransactions();
-  }, [token, type, refresh]); // 🔁 se met à jour automatiquement
+  }, [token, type, refresh]);
 
   const handleToggleStatut = async (id, currentStatut) => {
     const nouveauStatut = currentStatut === "prélevé" ? "en attente" : "prélevé";
@@ -43,9 +47,29 @@ export default function TransactionTable({ type, refresh, onUpdate }) {
         setTransactions((prev) =>
           prev.map((t) => (t.id === id ? { ...t, statut: nouveauStatut } : t))
         );
-        if (typeof onUpdate === "function") onUpdate(); // 🔁 déclenche le refresh global
+        if (typeof onUpdate === "function") onUpdate();
       } else {
         alert("Erreur lors de la mise à jour du statut");
+      }
+    } catch (err) {
+      alert("Erreur réseau");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    const confirm = window.confirm("Supprimer cette transaction ?");
+    if (!confirm) return;
+
+    try {
+      const response = await fetch(`http://localhost:8000/transactions/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.ok) {
+        if (typeof onUpdate === "function") onUpdate();
+      } else {
+        alert("Erreur lors de la suppression");
       }
     } catch (err) {
       alert("Erreur réseau");
@@ -55,7 +79,21 @@ export default function TransactionTable({ type, refresh, onUpdate }) {
   return (
     <div style={{ marginTop: "2rem" }}>
       <h3>{type === "récurrente" ? "🔁 Transactions récurrentes" : "💸 Transactions ponctuelles"}</h3>
+
       {message && <p style={{ color: "red" }}>{message}</p>}
+
+      {/* Barre de tri */}
+      <div style={{ marginBottom: "1rem" }}>
+        <label>Trier par :</label>
+        <select value={tri} onChange={(e) => setTri(e.target.value)} style={{ marginLeft: "0.5rem" }}>
+          <option value="date">Date</option>
+          <option value="montant">Montant</option>
+          <option value="statut">Statut</option>
+        </select>
+        <button onClick={() => setOrdre(ordre === "asc" ? "desc" : "asc")} style={{ marginLeft: "1rem" }}>
+          {ordre === "asc" ? "⬆️" : "⬇️"}
+        </button>
+      </div>
 
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
@@ -64,25 +102,53 @@ export default function TransactionTable({ type, refresh, onUpdate }) {
             <th style={th}>Description</th>
             <th style={th}>Montant</th>
             <th style={th}>Statut</th>
+            <th style={th}>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {transactions.map((t) => (
-            <tr key={t.id}>
-              <td style={td}>{t.date}</td>
-              <td style={td}>{t.description}</td>
-              <td style={td}>{t.montant.toFixed(2)} €</td>
-              <td style={td}>
-                <input
-                  type="checkbox"
-                  checked={t.statut === "prélevé"}
-                  onChange={() => handleToggleStatut(t.id, t.statut)}
-                />
-              </td>
-            </tr>
-          ))}
+          {[...transactions]
+            .sort((a, b) => {
+              let result = 0;
+
+              if (tri === "date") {
+                result = new Date(a.date) - new Date(b.date);
+              } else if (tri === "montant") {
+                result = a.montant - b.montant;
+              } else if (tri === "statut") {
+                result = a.statut.localeCompare(b.statut);
+              }
+
+              return ordre === "asc" ? result : -result;
+            })
+            .map((t) => (
+              <tr key={t.id}>
+                <td style={td}>{t.date}</td>
+                <td style={td}>{t.description}</td>
+                <td style={td}>{t.montant.toFixed(2)} €</td>
+                <td style={td}>
+                  <input
+                    type="checkbox"
+                    checked={t.statut === "prélevé"}
+                    onChange={() => handleToggleStatut(t.id, t.statut)}
+                  />
+                </td>
+                <td style={td}>
+                  <button onClick={() => setEdition(t)}>✏️</button>
+                  <button onClick={() => handleDelete(t.id)} style={{ marginLeft: "0.5rem" }}>🗑️</button>
+                </td>
+              </tr>
+            ))}
         </tbody>
       </table>
+
+      {/* Modale d'édition */}
+      {edition && (
+        <EditTransactionModal
+          transaction={edition}
+          onClose={() => setEdition(null)}
+          onUpdate={onUpdate}
+        />
+      )}
     </div>
   );
 }

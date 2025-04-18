@@ -4,6 +4,7 @@ import SoldeCard from "../components/SoldeCard";
 import PrevisionnelCard from "../components/PrevisionnelCard";
 import AjouterTransactionForm from "../components/AjouterTransactionForm";
 import TransactionTable from "../components/TransactionTable";
+import ResetStatutButton from "../components/ResetStatutButton";
 
 export default function Dashboard() {
   const [soldeActuel, setSoldeActuel] = useState(null);
@@ -19,9 +20,10 @@ export default function Dashboard() {
       <div style={{ padding: "1rem" }}>
         <SoldeCard onUpdate={setSoldeActuel} />
         <PrevisionnelCard solde={soldeActuel} refresh={refreshCount} />
-        <AjouterTransactionForm onAjout={forcerRefresh} />
+        <ResetStatutButton onReset={forcerRefresh} />
         <TransactionTable type="récurrente" refresh={refreshCount} onUpdate={forcerRefresh} />
         <TransactionTable type="ponctuelle" refresh={refreshCount} onUpdate={forcerRefresh} />
+        <AjouterTransactionForm onAjout={forcerRefresh} />
       </div>
     </>
   );
