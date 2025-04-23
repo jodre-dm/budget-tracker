@@ -1,67 +1,40 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 export default function Header() {
   const navigate = useNavigate();
+  const [prenom, setPrenom] = useState("User");
+  const [date, setDate] = useState("");
+
+  useEffect(() => {
+    const p = localStorage.getItem("prenom");
+    if (p) setPrenom(p);
+
+    const dateStr = new Date().toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
+    setDate(dateStr);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/");
   };
 
-  const date = new Date().toLocaleDateString("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric"
-  });
-
   return (
     <>
-      {/* Bandeau bleu */}
-      <div style={{
-        backgroundColor: "#3F51B5",
-        color: "white",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "0.75rem 1rem"
-      }}>
-        {/* Menu hamburger (non fonctionnel pour l'instant) */}
-        <div style={{ fontSize: "1.5rem", cursor: "pointer" }}>☰</div>
-
-        {/* Avatar cliquable = déconnexion */}
-        <div
-          onClick={handleLogout}
-          title="Déconnexion"
-          style={{
-            width: "35px",
-            height: "35px",
-            borderRadius: "50%",
-            backgroundColor: "#f5f5f5",
-            color: "#3F51B5",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontWeight: "bold",
-            cursor: "pointer"
-          }}
-        >
-          U
+      <div className="header-top">
+        <div className="menu-icon">☰</div>
+        <div className="avatar" onClick={handleLogout} title="Déconnexion">
+          {prenom[0].toUpperCase()}
         </div>
       </div>
 
-      {/* Barre blanche en-dessous */}
-      <div style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "0.5rem 1rem",
-        backgroundColor: "#fff",
-        borderBottom: "1px solid #ddd"
-      }}>
-        <div style={{ fontSize: "0.9rem" }}>{date}</div>
-        <div style={{ fontWeight: "500" }}>
-            Bonjour {localStorage.getItem("prenom") || "User"}
-        </div>
+      <div className="header-bar">
+        <div className="header-date">{date}</div>
+        <div className="header-user">Bonjour {prenom}</div>
       </div>
     </>
   );
